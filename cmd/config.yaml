@@ -1,0 +1,8 @@
+http:
+  port: 8089
+mysql:
+  url: 127.0.0.1:3306
+  username: root
+  password: justroot
+# 业务相关 请求不存在的tag时，是否新建
+CreateWhenTagNotExist: false

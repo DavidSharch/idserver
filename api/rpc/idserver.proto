@@ -1,0 +1,15 @@
+syntax = "proto3";
+package idserver;
+option go_package = ".;idserver";
+
+service Gid{
+  rpc GetId(Req)returns (Resp);
+}
+
+message Req {
+  string Tag = 1;
+}
+
+message Resp{
+  int64  id = 1;
+}

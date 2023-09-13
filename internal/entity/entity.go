@@ -1,14 +1,15 @@
 package entity
 
 type Segments struct {
-	BizTag     string `json:"biz_tag" gorm:"'biz_tag'"`
-	MaxId      int64  `json:"max_id" gorm:"'max_id'"`
-	Step       int64  `json:"step" gorm:"'step'"`
-	CreateTime int64  `json:"create_time" gorm:"'create_time'"`
-	UpdateTime int64  `json:"update_time" gorm:"'update_time'"`
-	Version    int    `json:"version" gorm:"version"`
+	Id         int64  `json:"id",gorm:"primarykey"`
+	BizTag     string `json:"biz_tag",gorm:"column:biz_tag"`
+	MaxId      int64  `json:"max_id",gorm:"column:max_id"`
+	Step       int64  `json:"step",gorm:"column:step"`
+	CreateTime int64  `json:"create_time",gorm:"column:create_time"`
+	UpdateTime int64  `json:"update_time",gorm:"column:update_time"`
+	Version    int    `json:"version",gorm:"column:version"`
 }
 
-func TableName() string {
+func (s Segments) TableName() string {
 	return "segments"
 }

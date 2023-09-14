@@ -7,7 +7,6 @@ type Segments struct {
 	Step       int64  `json:"step",gorm:"column:step"`
 	CreateTime int64  `json:"create_time",gorm:"column:create_time"`
 	UpdateTime int64  `json:"update_time",gorm:"column:update_time"`
-	Version    int    `json:"version",gorm:"column:version"`
 }
 
 func (s Segments) TableName() string {

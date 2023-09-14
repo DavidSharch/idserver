@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sharch/idserver/internal/srv"
 )
 
 type IdReqHttp struct {
@@ -27,7 +28,12 @@ func GetIdByHttp(c *gin.Context) {
 		c.String(501, "error")
 		return
 	}
-	c.String(200, "i am a new id")
+	id, err := srv.ServiceInstance.GetId(req.Tag)
+	if err != nil {
+		c.String(500, "get id err")
+		return
+	}
+	c.JSON(200, NewHttpResponse200(id))
 }
 
 // DeleteIdByHttp 删除指定的tag，使用软删除

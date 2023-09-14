@@ -19,3 +19,7 @@ etcd = ["127.0.0.1:2379"]
     level = "debug"
 [server]
     addr = "127.0.0.1:8089"
+[biz]
+    # 请求不存在的tag，是否直接创建新的数据
+    creatWhenNotExists = 1
+    defaultStep = 1000

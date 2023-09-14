@@ -3,11 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	api "github.com/sharch/idserver/api/http"
 	"github.com/sharch/idserver/config"
 	"github.com/sharch/idserver/internal/log"
+	"github.com/sharch/idserver/internal/srv"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -17,14 +21,15 @@ func main() {
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
-
+	time.Sleep(time.Millisecond * 50)
 	log.NewLogger(config.Conf.Log)
 
-	//srv.NewService(config.Conf)
-	//
-	//// 启动http服务
-	//router := api.GetRouter()
-	//router.Run(config.Conf.Server.Addr)
+	srv.NewService(config.Conf)
+
+	// 启动http服务
+	router := api.GetRouter()
+	router.Run(config.Conf.Server.Addr)
+	log.GetLogger().Info("http %s", zap.String("addr", config.Conf.Server.Addr))
 
 	//// 启动rpc服务
 	//grpc.Init(configs.Conf, s)

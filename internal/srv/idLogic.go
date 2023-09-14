@@ -3,10 +3,9 @@ package srv
 import (
 	"context"
 	"errors"
-	"fmt"
+	"github.com/sharch/idserver/config"
 	"github.com/sharch/idserver/internal/entity"
 	"sync"
-	"time"
 )
 
 type IdTagMap struct {
@@ -51,52 +50,39 @@ func (s *Service) NewIdTagMap() (*IdTagMap, error) {
 }
 
 // GetId 获取指定tag的下一个新id
-func (t *Tag) GetId(s *Service) (id int64, err error) {
-	canGetId := false
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+func (s *Service) GetId(tag string) (id int64, err error) {
+	mu := s.idTagMap.Mu
+	t, ok := s.idTagMap.TagMap[tag]
+	if !ok && config.Conf.Biz.CreatWhenNotExists == 1 {
+		// tag不存在，而且配置了不存在就新建
+		newSeg := entity.Segments{
+			BizTag: tag,
+			MaxId:  1,
+			Step:   config.Conf.Biz.DefaultStep,
+		}
+		mu.Lock()
+		if err = s.CreateTag(&newSeg); err != nil {
+			mu.Unlock()
+			return 0, err
+		}
+		_ = s.CreateTag(&newSeg)
+		// t重新赋值，此时一定有数据
+		t, _ = s.idTagMap.TagMap[tag]
+		mu.Unlock()
+	} else if !ok && config.Conf.Biz.CreatWhenNotExists == 0 {
+		// 不存在，同时没有配置不存在就新建
+		return 0, errors.New("tag does not exist")
+	}
 
 	t.Mu.Lock()
-
-	if t.remainsId() == true {
-		id = t.nextId()
-		canGetId = true
-	}
-
-	// 判断是否需要准备下一个id段 使用超过一半
-	if t.IdArray[0].End/t.IdArray[0].Cur < 2 {
-		t.Mu.Unlock()
-		go t.getNextIdStep(cancel, s)
-	} else {
-		// 不需要申请新id段，就解锁，defer调用cancel
-		t.Mu.Unlock()
-		defer cancel()
-	}
-	// 已经拿到id，就返回
-	if canGetId {
-		return
-	}
-
-	// 等待获取到下一段
-	select {
-	case <-ctx.Done():
-		fmt.Printf("等待获取到下一段，已经到时\n")
-	}
-	t.Mu.Lock()
-	if t.remainsId() {
-		id = t.nextId()
-		canGetId = true
-	} else {
-		err = errors.New("get id failed")
-	}
+	id = t.nextId()
 	t.Mu.Unlock()
-
 	return
+	// todo 这里可以考虑：返回错误，还是等到拿到新id段， 返回新id
 }
 
 // RemainsId 查询tag的id是否有剩余
 func (t *Tag) remainsId() bool {
-	t.Mu.RLock()
-	defer t.Mu.RUnlock()
 	if len(t.IdArray) > 1 {
 		// 超过一个号段，说明已经提前申请下一个号段了，一定存在id可用
 		return true
@@ -108,8 +94,6 @@ func (t *Tag) remainsId() bool {
 
 // RemainsIdCnt 查询tag的id剩余个数
 func (t *Tag) remainsIdCnt() int64 {
-	t.Mu.RLock()
-	defer t.Mu.RUnlock()
 	var cnt int64
 	for _, id := range t.IdArray {
 		id := id
@@ -145,4 +129,19 @@ func (t *Tag) getNextIdStep(cancel context.CancelFunc, s *Service) {
 	} else {
 		t.Mu.RUnlock()
 	}
+}
+
+// CreateTag 把seg转换成tag，然后写入map
+func (s *Service) CreateTag(e *entity.Segments) error {
+	data, err := s.r.SegmentsCreate(e)
+	if err != nil {
+		return err
+	}
+	b := &Tag{
+		TagName: e.BizTag,
+		IdArray: make([]*ID, 0),
+	}
+	b.IdArray = append(b.IdArray, &ID{Start: data.MaxId, End: data.MaxId + data.Step})
+	s.idTagMap.TagMap[e.BizTag] = b
+	return nil
 }

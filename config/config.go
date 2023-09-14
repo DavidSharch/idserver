@@ -20,6 +20,12 @@ type Config struct {
 	Log    *log.Options
 	Mysql  *orm.MysqlConfig
 	Server *ServerConfig
+	Biz    *BizConfig
+}
+
+type BizConfig struct {
+	CreatWhenNotExists int64
+	DefaultStep        int64
 }
 
 type ServerConfig struct {
@@ -37,5 +43,6 @@ func Init() (err error) {
 	fmt.Printf("log: %+v \n", Conf.Log)
 	fmt.Printf("mysql: %+v \n", Conf.Mysql)
 	fmt.Printf("server: %+v \n", Conf.Server)
+	fmt.Printf("biz: %+v \n", Conf.Biz)
 	return
 }

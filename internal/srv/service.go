@@ -16,6 +16,8 @@ type Service struct {
 	idTagMap *IdTagMap
 }
 
+var ServiceInstance *Service
+
 // NewService 初始化MySQL，缓存预热
 func NewService(c *config.Config) (s *Service) {
 	var err error
@@ -27,5 +29,6 @@ func NewService(c *config.Config) (s *Service) {
 		log.GetLogger().Error("service.NewService 初始化失败", zap.Error(err))
 		panic(err)
 	}
+	ServiceInstance = s
 	return s
 }

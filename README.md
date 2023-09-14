@@ -6,3 +6,9 @@
 - id有序性：只有一个节点对外服务，不会出现乱序。重启后，重新申请号段，会有部分id浪费，但不会出现重复。
 ## 参考
 [Leaf——美团点评分布式ID生成系统 - 美团技术团队 (meituan.com)](https://tech.meituan.com/2017/04/21/mt-leaf.html)
+
+
+```shell
+# 生成可执行文件
+go build -o "ideserver"
+```

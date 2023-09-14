@@ -29,10 +29,13 @@ type ID struct {
 	End   int64
 }
 
-func NewIdTagMap() (*IdTagMap, error) {
-	// 1. 读取最近12小时的id
-	// 2. 写入map
+func (s *Service) NewIdTagMap() (*IdTagMap, error) {
+	// 读取最近的id 写入map
+	var err error
 	var res []entity.Segments
+	if res, err = s.r.SegmentsGetAll(); err != nil {
+		return nil, err
+	}
 	tagMap := make(map[string]*Tag)
 	for _, seg := range res {
 		seg := seg
@@ -44,7 +47,7 @@ func NewIdTagMap() (*IdTagMap, error) {
 			tagMap[seg.BizTag].IdArray, &ID{Start: seg.MaxId, End: seg.MaxId + seg.Step},
 		)
 	}
-	return nil, nil
+	return &IdTagMap{TagMap: tagMap}, nil
 }
 
 // GetId 获取指定tag的下一个新id

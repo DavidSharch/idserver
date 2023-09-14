@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Config struct {
+type MysqlConfig struct {
 	Addr       string
 	User       string
 	Password   string
@@ -21,7 +21,7 @@ type Config struct {
 	ExecTimeout  int //执行时间
 }
 
-func NewMysql(c *Config) (db *gorm.DB) {
+func NewMysql(c *MysqlConfig) (db *gorm.DB) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		c.User, c.Password, c.Addr, c.DbName,
 	)

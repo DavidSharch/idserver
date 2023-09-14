@@ -2,7 +2,6 @@ package orm
 
 import (
 	"errors"
-	"github.com/sharch/idserver/config"
 	"github.com/sharch/idserver/internal/entity"
 	"github.com/sharch/idserver/internal/log"
 	"go.uber.org/zap"
@@ -11,12 +10,12 @@ import (
 )
 
 type Repository struct {
-	c  *config.Config
+	c  *MysqlConfig
 	db *gorm.DB
 }
 
-func NewRepository(c *config.Config) (r *Repository) {
-	r = &Repository{c: c, db: NewMysql(c.Mysql)}
+func NewRepository(c *MysqlConfig) (r *Repository) {
+	r = &Repository{c: c, db: NewMysql(c)}
 	return
 }
 
